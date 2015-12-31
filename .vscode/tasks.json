@@ -1,0 +1,23 @@
+{
+	"version": "0.1.0",
+	"command": "grunt",
+	"isShellCommand": true,
+	"tasks": [{
+    "taskName": "dev",
+    "isBuildCommand": true,
+    "showOutput": "always",
+    "isWatching": true
+  }, {
+    "taskName": "test",
+    "isTestCommand": true,
+    "showOutput": "always",
+    // todo: figure out if I can do this
+    // "problemMatcher": {
+    //   "owner": "mocha",
+    //   "fileLocation": ["relative", "${workspaceRoot}"],
+    //   "pattern": {
+
+    //   }
+    // }
+  }]
+}

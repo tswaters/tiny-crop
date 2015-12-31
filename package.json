@@ -1,0 +1,36 @@
+{
+  "name": "tiny-crop",
+  "version": "0.0.0",
+  "description": "tiny cropping library",
+  "scripts": {
+    "test": "mocha --compilers js:babel-register",
+    "coverage": "babel-node ./node_modules/istanbul/lib/cli cover --dir test/reports/coverage node_modules/mocha/bin/_mocha"
+  },
+  "keywords": [
+    "crop"
+  ],
+  "author": "Tyler Waters",
+  "license": "MIT",
+  "devDependencies": {
+    "babel-preset-es2015": "^6.3.13",
+    "babel-register": "^6.3.13",
+    "babelify": "^7.2.0",
+    "eslint": "^1.10.3",
+    "eslint-config-defaults": "^7.1.1",
+    "eslint-html-reporter": "^0.4.14",
+    "grunt": "^0.4.5",
+    "grunt-babel": "^6.0.0",
+    "grunt-browserify": "^4.0.1",
+    "grunt-contrib-clean": "^0.7.0",
+    "grunt-contrib-uglify": "^0.11.0",
+    "grunt-contrib-watch": "^0.6.1",
+    "grunt-eslint": "^17.3.1",
+    "grunt-extract-sourcemap": "^0.1.16",
+    "grunt-jsdoc": "^1.1.0",
+    "grunt-shell": "^1.1.2",
+    "istanbul": "^1.0.0-alpha.2",
+    "mocha": "^2.3.4",
+    "unit.js": "^2.0.0"
+  },
+  "dependencies": {}
+}

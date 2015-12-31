@@ -1,0 +1,21 @@
+{
+  "name": "tiny-crop",
+  "version": "0.0.0",
+  "authors": [
+    "Tyler Waters <tyler.waters@gmail.com>"
+  ],
+  "description": "Tiny cropping library",
+  "main": "dist/tiny-crop.js",
+  "keywords": [
+    "crop"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "Gruntfile.js",
+    "test",
+    "src",
+    "lib"
+  ]
+}

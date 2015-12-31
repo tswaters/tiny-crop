@@ -1,0 +1,22 @@
+{
+  "editor.tabSize": 2,
+  "editor.insertSpaces": true,
+  "files.trimTrailingWhitespace": true,
+  "files.exclude": {
+    "**/.git": true,
+    "node_modules": true,
+    "dist": true,
+    "lib": true,
+    "docs": true,
+    "typings": true,
+    "test/reports": true
+  },
+  "search.exclude": {
+    "**/node_modules": true,
+    "dist": true,
+    "lib": true,
+    "docs": true,
+    "typings": true
+  },
+  "eslint.enable": true
+}
