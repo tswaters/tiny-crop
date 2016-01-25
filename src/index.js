@@ -1,4 +1,4 @@
 
-import TinyCrop from './tiny-crop';
+import TinyCrop from './tiny-crop'
 
-window.TinyCrop = TinyCrop;
+window.TinyCrop = TinyCrop

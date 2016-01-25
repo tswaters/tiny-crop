@@ -3,6 +3,7 @@
   "version": "0.0.0",
   "description": "tiny cropping library",
   "scripts": {
+    "authors": "git log --all --format=\"%aN <%aE>\" > AUTHORS",
     "test": "mocha --compilers js:babel-register",
     "coverage": "babel-node ./node_modules/istanbul/lib/cli cover --dir test/reports/coverage node_modules/mocha/bin/_mocha"
   },
@@ -28,8 +29,11 @@
     "grunt-extract-sourcemap": "^0.1.16",
     "grunt-jsdoc": "^1.1.0",
     "grunt-shell": "^1.1.2",
+    "ink-docstrap": "^1.1.0",
     "istanbul": "^1.0.0-alpha.2",
+    "jsdom": "^7.2.2",
     "mocha": "^2.3.4",
+    "sinon": "^2.0.0-pre",
     "unit.js": "^2.0.0"
   },
   "dependencies": {}

@@ -1,0 +1,14 @@
+<!doctype html>
+<head>
+  <meta charset="utf-8">
+  <script src="../dist/tiny-crop.min.js"></script>
+</head>
+<body>
+  <img id="image" src="example.jpg">
+  <script>
+    window.addEventListener('load', function () {
+      var cropper = new TinyCrop({image: document.getElementById('image')});
+    })
+  </script>
+</body>
+</html>

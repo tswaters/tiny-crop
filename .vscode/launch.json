@@ -21,6 +21,21 @@
 			"outDir": null
 		},
 		{
+			"name": "Run mocha",
+			"type": "node",
+			"program": "node_modules/mocha/bin/_mocha",
+			"stopOnEntry": false,
+			"args": ["--compilers", "js:babel-register"],
+			"cwd": ".",
+			"runtimeArgs": [
+					"--nolazy"
+			],
+			"externalConsole": false,
+			"sourceMaps": true,
+			"runtimeExecutable": null,
+			"outDir": null
+		},
+		{
 			"name": "Attach",
 			"type": "node",
 			"request": "attach",

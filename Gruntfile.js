@@ -2,7 +2,9 @@
 module.exports = (grunt) => {
 
   grunt.initConfig({
+
     'pkg': grunt.file.readJSON('package.json'),
+
     'name': '<%= pkg.name.toLowerCase() %>',
     'banner': [
       '/*',
@@ -11,33 +13,32 @@ module.exports = (grunt) => {
       '<%= grunt.file.read("LICENSE") %>',
       '*/'
     ].join('\n'),
+
     clean: {
       options: {
         force: true
       },
       dist: ['dist'],
-      lib: ['lib'],
       docs: ['docs'],
       coverage: ['test/reports/coverage'],
       analysis: ['test/reports/analysis']
     },
+
     browserify: {
       options: {
-        browserifyOptions: {
-          debug: true
-        },
-        transform: [
-          ['babelify', {
-            presets: ['es2015']
-          }]
-        ]
       },
       dist: {
         files: {
-          './lib/tiny-crop.js': [
-            'src/util.js',
-            'src/index.js',
-            'src/tiny-crop.js'
+          './dist/tiny-crop.js': ['src/index.js']
+        },
+        options: {
+          browserifyOptions: {
+            debug: true
+          },
+          transform: [
+            ['babelify', {
+              presets: ['es2015']
+            }]
           ]
         }
       }
@@ -46,7 +47,7 @@ module.exports = (grunt) => {
     extract_sourcemap: {
       dist: {
         files: {
-          'lib/': 'lib/tiny-crop.js'
+          'dist/': 'dist/tiny-crop.js'
         }
       }
     },
@@ -58,19 +59,19 @@ module.exports = (grunt) => {
           unsafe: true
         },
         sourceMap: true,
-        sourceMapIn: 'lib/tiny-crop.js.map'
-      },
-      compat: {
-        files: {
-          'dist/tiny-crop.compat.min.js': ['./lib/tiny-crop.compat.js']
-        }
+        sourceMapIn: 'dist/tiny-crop.js.map'
       },
       dist: {
         options: {
           screwIE8: true
         },
         files: {
-          'dist/tiny-crop.min.js': ['./lib/tiny-crop.js']
+          'dist/tiny-crop.min.js': ['./dist/tiny-crop.js']
+        }
+      },
+      compat: {
+        files: {
+          'dist/tiny-crop.compat.min.js': ['./dist/tiny-crop.compat.js']
         }
       }
     },
@@ -104,7 +105,17 @@ module.exports = (grunt) => {
         ],
         options: {
           destination: 'docs',
-          private: false
+          private: false,
+          configure: './jsdoc.conf.json',
+          template: 'node_modules/ink-docstrap/template'
+        }
+      }
+    },
+
+    gitcheckout: {
+      'gh-pages': {
+        options: {
+          branch: 'gh-pages'
         }
       }
     },
@@ -115,44 +126,51 @@ module.exports = (grunt) => {
         tasks: ['browserify', 'extract_sourcemap', 'uglify:dist']
       }
     }
-  });
+  })
 
-  grunt.loadNpmTasks('grunt-jsdoc');
-  grunt.loadNpmTasks('grunt-eslint');
-  grunt.loadNpmTasks('grunt-shell');
-  grunt.loadNpmTasks('grunt-contrib-clean');
-  grunt.loadNpmTasks('grunt-browserify');
-  grunt.loadNpmTasks('grunt-extract-sourcemap');
-  grunt.loadNpmTasks('grunt-contrib-uglify');
-  grunt.loadNpmTasks('grunt-contrib-watch');
+  grunt.loadNpmTasks('grunt-jsdoc')
+  grunt.loadNpmTasks('grunt-eslint')
+  grunt.loadNpmTasks('grunt-shell')
+  grunt.loadNpmTasks('grunt-contrib-clean')
+  grunt.loadNpmTasks('grunt-browserify')
+  grunt.loadNpmTasks('grunt-extract-sourcemap')
+  grunt.loadNpmTasks('grunt-contrib-uglify')
+  grunt.loadNpmTasks('grunt-contrib-watch')
+  grunt.loadNpmTasks('grunt-babel')
 
   grunt.registerTask('default', [
     'clean:dist',
-    'clean:lib',
     'browserify',
     'extract_sourcemap',
     'uglify:dist'
-  ]);
+  ])
 
   grunt.registerTask('lint', [
+    'clean:analysis',
     'eslint'
-  ]);
+  ])
 
   grunt.registerTask('test', [
-    'clean:analysis',
     'clean:coverage',
     'shell:test',
     'shell:coverage'
-  ]);
+  ])
 
   grunt.registerTask('docs', [
     'clean:docs',
     'jsdoc'
-  ]);
+  ])
 
   grunt.registerTask('dev', [
     'default',
     'watch'
-  ]);
+  ])
 
-};
+  grunt.registerTask('publish', [
+    'default',
+    'test',
+    'lint',
+    'docs'
+  ])
+
+}

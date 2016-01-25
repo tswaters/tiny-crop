@@ -16,6 +16,8 @@
     "Gruntfile.js",
     "test",
     "src",
-    "lib"
+    "lib",
+    "docs",
+    "example"
   ]
 }
