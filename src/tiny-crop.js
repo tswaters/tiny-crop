@@ -1,250 +1,301 @@
 /**
- * @description main cropper library.
+ * @file tiny-crop
+ * @description main cropper file definition
  */
-'use strict'
 
-import * as Utils from './util'
-import Handle from './handle'
-import Cropper from './cropper'
-import Image from './image'
+'use strict'
 
 /**
  * @class TinyCrop
+ * @constructor
+ * @param {*} [opts={}] options
+ * @param {string|HTMLImageElement} [opts.image] image element to attach to
+ * @param {number|string} [opts.minWidth=0] minimum width for the crop
+ * @param {number|string} [opts.minWidth=Infinity] maximum width for the crop
+ * @param {number|string} [opts.minWidth=0] minimum height for the crop
+ * @param {number|string} [opts.minWidth=Infinity] maximum height for the crop
  */
-export default class TinyCrop {
+function TinyCrop (/*opts*/) {
+  const opts = arguments[0] || {}
 
-  constructor ({
-    minWidth = -Infinity,
-    maxWidth = Infinity,
-    minHeight = -Infinity,
-    maxHeight = Infinity,
-    image = null
-  } = {}) {
 
-    Utils.attachPageCss('tiny-crop', `
-    .crop-target, .handle, .crop-area { -webkit-touch-callout: none; -webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; }
-    .crop-area { opacity: .5; display: none; background-color: #AAA; border: 1px solid black; position: absolute; box-sizing: border-box;}
-    .crop-area.finished .handle { display:block; }
-    .handle {position:absolute; border: 2px solid black; display: none; background-color:white; opacity: 1; box-sizing: border-box; width: 10px; height: 10px; z-index: 2; }
-    .crop-area.active { display:block; }
-    .crop-area.finished { cursor: move; }
-    .handle[data-north] { cursor: n-resize; }
-    .handle[data-east] { cursor: e-resize; }
-    .handle[data-west] { cursor: w-resize; }
-    .handle[data-south] { cursor: s-resize; }
-    .handle[data-north-west] { cursor: nw-resize; }
-    .handle[data-north-east] { cursor: ne-resize; }
-    .handle[data-south-west] { cursor: sw-resize; }
-    .handle[data-south-east] { cursor: se-resize; }
-    .handle[data-north], .handle[data-north-east], .handle[data-north-west] { top: -1px; }
-    .handle[data-south], .handle[data-south-east], .handle[data-south-west] { bottom: -1px; }
-    .handle[data-east], .handle[data-north-east], .handle[data-south-east] { right: -1px; }
-    .handle[data-west], .handle[data-north-west], .handle[data-south-west] { left: -1px; }
-    .handle[data-north], .handle[data-south], .handle[data-east], .handle[data-west] { z-index: 1; }
-    .handle[data-north], .handle[data-south] { width: 100%; }
-    .handle[data-east], .handle[data-west] { height: 100%; }`)
+  /**
+   * Minimum width of the crop dimension
+   * @type {number}
+   * @access private
+   */
+  this.minWidth = validateNumber(parseInt(opts.minWidth, 10) || 0)
 
-    /**
-     * Minimum width of the cropper element.
-     * @type {Number}
-     */
-    this.minWidth = Utils.validateNumber(minWidth)
+  /**
+   * Maximum width of the crop dimension
+   * @type {number}
+   * @access private
+   */
+  this.maxWidth = validateNumber(parseInt(opts.maxWidth, 10) || Infinity)
 
-    /**
-     * Minimum height of the cropper element.
-     * @type {Number}
-     */
-    this.minHeight = Utils.validateNumber(minHeight)
+  /**
+   * Minimum height of the crop dimension
+   * @type {number}
+   * @access private
+   */
+  this.minHeight = validateNumber(parseInt(opts.minHeight, 10) || 0)
 
-    /**
-     * Maximum width of the cropper element.
-     * @type {Number}
-     */
-    this.maxWidth = Utils.validateNumber(maxWidth)
+  /**
+   * Maximum height of the crop dimension
+   * @type {number}
+   * @access private
+   */
+  this.maxHeight = validateNumber(parseInt(opts.maxHeight, 10) || Infinity)
 
-    /**
-     * Maximum height of the cropper element.
-     * @type {Number}
-     */
-    this.maxHeight = Utils.validateNumber(maxHeight)
+  /**
+   * Image tied to the TinyCrop instance
+   * Note - this name will be minified away by uglifyjs
+   * @type {CropImage}
+   * @private
+   */
+  this._image = new CropImage({tinycrop: this})
 
-    this.cropper = new Cropper({ tinycrop: this })
+  /**
+   * Cropper element tied to the TinyCrop instance
+   * Note - this name will be minified away by uglifyjs
+   * @type {Cropper}
+   * @private
+   */
+  this._cropper = new Cropper({tinycrop: this})
 
-    this.handles = ['north', 'south', 'east', 'west', 'northEast', 'northWest', 'southEast', 'southWest'].map((handle) => {
-      return new Handle({
-        handle: handle,
-        parent: this.cropper.element,
-        tinycrop: this
-      })
-    })
+  /**
+   * Array of handles tied to the TinyCrop instance
+   * Note - this name will be minified away by uglifyjs
+   * @type {Handle[]}
+   * @private
+   */
+  this._handles = [
+    north,
+    south,
+    east,
+    west,
+    north + east,
+    north + west,
+    south + east,
+    south + west
+  ].map(handle => new Handle({tinycrop: this, handle}))
 
-    this.image = new Image({ image: Utils.getImage(image), tinycrop: this })
+  this._cropDimensions = {}
 
-    var imageBounds = this.image.bounds()
+  this._bounds = {}
 
-    this.min = {
-      x: imageBounds.left,
-      y: imageBounds.top
-    }
+  this._events = {done: []}
 
-    this.max = {
-      x: imageBounds.left + imageBounds.width,
-      y: imageBounds.top + imageBounds.height
-    }
+  this._docMouseUp = null
 
-    this.cropDimensions = {}
-
-    this.events = {
-      done: []
-    }
-
-    this.image.startSize()
-
+  let styleElement = d.getElementById('tiny-crop-css')
+  if (!styleElement) {
+    styleElement = d.createElement('style')
+    styleElement.id = 'tiny-crop-css'
+    styleElement.type = 'text/css'
+    d.head.appendChild(styleElement)
+    styleElement.innerHTML = [
+      `.crop-target,.${handle},.${croparea}{user-select:none;box-sizing:border-box}`,
+      `.${croparea}{opacity:.5;display:none;background-color:#AAA;border:1px solid;position:absolute}`,
+      `.${croparea}.finished .${handle}{display:block}`,
+      `.${handle}{position:absolute;border:2px solid;display:none;background-color:#fff;width:10px;height:10px;z-index:2}`,
+      `.${croparea}.active{display:block}`,
+      `.${croparea}.finished{cursor:move}`,
+      `.${handle}[${data + north}]{cursor:n-resize}`,
+      `.${handle}[${data + west}]{cursor:e-resize}`,
+      `.${handle}[${data + east}]{cursor:w-resize}`,
+      `.${handle}[${data + south}]{cursor:s-resize}`,
+      `.${handle}[${data + north + west}]{cursor:nw-resize}`,
+      `.${handle}[${data + north + east}]{cursor:ne-resize}`,
+      `.${handle}[${data + south + west}]{cursor:sw-resize}`,
+      `.${handle}[${data + south + east}]{cursor:se-resize}`,
+      `.${handle}[${data + north}],.${handle}[${data + north + east}],.${handle}[${data + north + west}]{top:-1px}`,
+      `.${handle}[${data + south}],.${handle}[${data + south + east}],.${handle}[${data + south + west}]{bottom:-1px}`,
+      `.${handle}[${data + east}],.${handle}[${data + north + east}],.${handle}[${data + south + east}]{right:-1px}`,
+      `.${handle}[${data + west}],.${handle}[${data + north + west}],.${handle}[${data + south + west}]{left:-1px}`,
+      `.${handle}[${data + north}],.${handle}[${data + south}],.${handle}[${data + east}],.${handle}[${data + west}]{z-index:1}`,
+      `.${handle}[${data + north}],.${handle}[${data + south}]{width:100%}`,
+      `.${handle}[${data + east}],.${handle}[${data + west}]{height:100%})`
+    ].join('')
   }
 
-  initialize () {
-    this.cropDimensions.height = 0
-    this.cropDimensions.width = 0
-    this.cropDimensions.bottom = null
-    this.cropDimensions.right = null
-    this.cropDimensions.left = null
-    this.cropDimensions.top = null
-  }
+  this.initialize(getImage(opts.image))
 
+}
+
+/** @lends TinyCrop.prototype **/
+TinyCrop.prototype = {
+
+  /**
+   * Initializes tiny-crop.
+   * @param {HTMLImageElement} image image to attach to.
+   */
+  initialize (image) {
+    this._image.initialize(image)
+    this._cropper.initialize()
+    this._handles.forEach(handle => handle.initialize(this._cropper.element))
+    this._bounds = this._image.bounds()
+    this._image.startSize()
+  },
+
+  /**
+   * Signifies a crop operation has started
+   */
   start () {
-    this.cropper.element.classList.add('active')
-    this.cropper.element.classList.remove('finished')
-  }
+    this._cropper.start()
+    this._docMouseUp = attach(d, 'mouseup', () => this.finish())
+  },
 
+  /**
+   * Resets the crop operation to initial state
+   */
+  restart (anchor) {
+    this._cropDimensions.height = 0
+    this._cropDimensions.width = 0
+    this._cropDimensions.bottom = null
+    this._cropDimensions.right = null
+    this._cropDimensions.left = null
+    this._cropDimensions.top = null
+    this.startSize(anchor)
+  },
+
+  /**
+   * Signifies a crop operation has completed
+   * @emits done
+   */
+  finish (ev) {
+    if (this._docMouseUp) { this._docMouseUp(); this._docMouseUp = null }
+    this._cropper.element.classList.add('finished')
+    this._handles.forEach(handle => handle.finish())
+    this._cropper.finish()
+    this._image.finish()
+    this._image.startSize()
+    this._cropper.startDrag()
+    this._handles.forEach(handle => handle.startSize(this._cropDimensions))
+    this._events.done.forEach(fn => fn(this._cropper.rect()))
+  },
+
+  /**
+   * Starts a size operation given the provided anchor
+   * @param {*} anchor x/y coordinates from which the operation was started
+   */
   startSize (anchor) {
-    this.initialize()
     this.start()
-    this.image.size(anchor)
-    this.cropper.size(anchor)
-    this.handles.forEach((handle) => {
-      return handle.size(anchor)
-    })
-  }
+    this._image.size(anchor)
+    this._cropper.size(anchor)
+    this._handles.forEach(handle => handle.size(anchor))
+  },
 
-  startResize (anchor) {
-    this.start()
-    this.cropper.resize(anchor)
-    this.image.resize(anchor)
-    this.handles.forEach((handle) => {
-      return handle.resize(anchor)
-    })
-  }
-
+  /**
+   * Starts a drag operation given the provided anchor
+   * @param {*} anchor x/y coordinates from which the operation was started
+   */
   startDrag (anchor) {
     this.start()
-    this.cropper.drag(anchor)
-    this.image.drag(anchor)
-    this.handles.forEach((handle) => {
-      return handle.drag(anchor)
-    })
-  }
+    this._image.drag(anchor)
+    this._cropper.drag(anchor)
+    this._handles.forEach(handle => handle.drag(anchor))
+  },
 
+  /**
+   * Sizing operation - resizes the crop element based on event arguments and initial anchor
+   * @param {*} anchor x/y coordinates from which the operation was started
+   * @param {MouseEvent} e underlying mouse event.
+   */
   size (anchor, e) {
+    let inverse
 
-    if (anchor.y) {
-      let inverse = e.clientY < anchor.y
-      let min = anchor.y
-      let max = window.innerHeight - min
-      let cur = Math.max(Math.abs(e.clientY - min), this.minHeight)
-      let minDim = inverse ? min - this.min.y : this.max.y - min
-      this.cropDimensions.top = !inverse ? min : null
-      this.cropDimensions.bottom = inverse ? max : null
-      this.cropDimensions.height = Math.min(minDim, cur, this.maxHeight)
+    if (anchor.y != null) {
+      inverse = e.clientY < anchor.y
+      const height = Math[min](
+        Math[max](this.minHeight, inverse ? anchor.y - this._bounds.min.y : this._bounds.max.y - anchor.y),
+        Math[max](this.minHeight, Math.abs(e.clientY - anchor.y)),
+        this.maxHeight
+      )
+      this._cropDimensions.top = !inverse ? Math[min](anchor.y, this._bounds.max.y - height) : null
+      this._cropDimensions.bottom = inverse ? Math[min](
+        w[_innerHeight] - anchor.y,
+        w[_innerHeight] - (this._bounds.min.y + height)
+      ) : null
+      this._cropDimensions.height = height
+    }
+    if (anchor.x != null) {
+      inverse = e.clientX < anchor.x
+      const width = Math[min](
+        Math[max](this.minWidth, inverse ? anchor.x - this._bounds.min.x : this._bounds.max.x - anchor.x),
+        Math[max](this.minWidth, Math.abs(e.clientX - anchor.x)),
+        this.maxWidth
+      )
+      this._cropDimensions.left = !inverse ? Math[min](anchor.x, this._bounds.max.x - width) : null
+      this._cropDimensions.right = inverse ? Math[min](
+        w[_innerWidth] - anchor.x,
+        w[_innerWidth] - (this._bounds.min.x + width)
+      ) : null
+      this._cropDimensions.width = width
     }
 
-    if (anchor.x) {
-      let inverse = e.clientX < anchor.x
-      let min = anchor.x
-      let max = window.innerWidth - min
-      let cur = Math.max(Math.abs(e.clientX - min), this.minWidth)
-      let minDim = inverse ? min - this.min.x : this.max.x - min
-      this.cropDimensions.left = !inverse ? min : null
-      this.cropDimensions.right = inverse ? max : null
-      this.cropDimensions.width = Math.min(minDim, cur, this.maxWidth)
-    }
+    this._cropDimensions = this._cropper.update(this._cropDimensions)
+  },
 
-    this.cropper.update(this.cropDimensions)
-  }
-
+  /**
+   * Sizing operation - moves the crop element without changing size based on event arguments and initial anchor
+   * @param {*} anchor x/y coordinates from which the operation was started
+   * @param {MouseEvent} e underlying mouse event.
+   */
   drag (anchor, e) {
-    var curX = e.clientX - anchor.x
-    var curY = e.clientY - anchor.y
-    var maxPosX = this.max.x - this.cropDimensions.width
-    var maxPosY = this.max.y - this.cropDimensions.height
-    this.cropDimensions.top = Math.max(this.min.y, Math.min(curY, maxPosY))
-    this.cropDimensions.left = Math.max(this.min.x, Math.min(curX, maxPosX))
-    this.cropper.update(this.cropDimensions)
-  }
+    this._cropDimensions.top = Math[max](this._bounds.min.y, Math[min](e.clientY - anchor.y, this._bounds.max.y - this._cropDimensions.height))
+    this._cropDimensions.right = null
+    this._cropDimensions.bottom = null
+    this._cropDimensions.left = Math[max](this._bounds.min.x, Math[min](e.clientX - anchor.x, this._bounds.max.x - this._cropDimensions.width))
+    this._cropper.update(this._cropDimensions)
+  },
 
-  finish () {
-
-    this.cropper.element.classList.add('finished')
-    this.handles.forEach((handle) => {
-      return handle.finish()
-    })
-    this.cropper.finish()
-    this.image.finish()
-    this.image.startSize()
-    this.cropper.startDrag()
-    this.handles.forEach((handle) => {
-      return handle.startResize(this.cropDimensions)
-    })
-    this.events.done.forEach((fn) => {
-      return fn(this.cropDimensions)
-    })
-  }
-
+  /**
+   * Attaches an event to the cropper
+   * @param {string} eventName name of the event ('done')
+   * @param {function} fn function to invoke
+   * @returns {function} when called, removes event listener
+   */
   on (eventName, fn) {
-    if (!Utils.isString(eventName)) {
-      throw new Error(`TinyCrop#on: eventName not provided (got ${eventName})`)
+    if (typeof eventName !== 'string' || !this._events[eventName] || typeof fn !== 'function') {
+      throw new Error(parameterError)
     }
-    if (!(eventName in this.handlers)) {
-      throw new Error(`TinyCrop#on: eventName is invalid (got ${eventName})`)
-    }
-    if (!Utils.isFunction(fn)) {
-      throw new Error(`TinyCrop#on fn was not provided to (got ${fn})`)
-    }
-    this.handlers[eventName].push(fn)
-    return () => { return this.off(eventName, fn)}
-  }
+    this._events[eventName].push(fn)
+    return () => this.off(eventName, fn)
+  },
 
+  /**
+   * Removes an event from the cropper
+   * @param {string} eventName name of the event ('done')
+   * @param {function} [fn] function to invoke - when not provided, all events are removed
+   */
   off (eventName, fn) {
-    if (!Utils.isString(eventName)) {
-      throw new Error(`TinyCrop#off: eventName not provided (got ${eventName}`)
+    if (typeof eventName !== 'string' || !this._events[eventName]) {
+      throw new Error(parameterError)
     }
-    if (!(eventName in this.handlers)) {
-      throw new Error(`TinyCrop#off: eventName is invalid (got ${eventName}`)
-    }
-    if (Utils.isUndefined(fn)) {
-      this.handlers[eventName] = []
+    if (typeof fn === 'undefined') {
+      this._events[eventName] = []
       return
     }
-    if (!Utils.isFunction(fn)) {
-      throw new Error(`TinyCrop#off: fn was not provided (got ${fn} )`)
+    if (typeof fn !== 'function') {
+      throw new Error(parameterError)
     }
-    var index = this.handlers[eventName].indexOf(fn)
+    const index = this._events[eventName].indexOf(fn)
     if (index === -1) {
-      throw new Error(`TinyCrop#off: tried to detach fn that was never atteched!`)
+      throw new Error(parameterError)
     }
-    this.handlers[eventName].splice(index, 1)
-  }
+    this._events[eventName].splice(index, 1)
+  },
 
-  destroy() {
-    this.eventHandlers.forEach((disposable) => {
-      if (disposable) disposable()
-    })
-    this.eventHandlers = []
-    this.image.destroy()
-    this.cropper.destroy()
-    Utils.forEach(this.handles, (handle) => {
-      return handle.destroy()
-    })
+  /**
+   * Removes all traces of this TinyCrop instance from the page
+   */
+  destroy () {
+    if (this._docMouseUp) { this._docMouseUp(); this._docMouseUp = null }
+    this._events.done = []
+    this._image.destroy()
+    this._cropper.destroy()
+    this._handles.forEach(handle => handle.destroy())
   }
-
 
 }

@@ -1,42 +1,58 @@
+/**
+ * @file handle.js
+ * @description main file for the Handle class
+ */
 
-import * as Util from './util'
-import Element from './element'
+'use strict'
 
-export default class Handle extends Element {
+/**
+ * Handles are used to size the cropper element once cropper dimensions are set
+ * @constructor
+ * @extends CropElement
+ * @param {*} opts options to pass to the constructor
+ * @param {TinyCrop} opts.tinycrop reference to tinycrop
+ * @param {string} opts.handle handle key identifying what handle it is
+ */
+function Handle (opts) {
+  CropElement.call(this, opts)
+  this.handle = opts.handle
+  this.north = opts.handle.indexOf(north) > -1
+  this.south = opts.handle.indexOf(south) > -1
+  this.east = opts.handle.indexOf(east) > -1
+  this.west = opts.handle.indexOf(west) > -1
+}
+
+inherits(Handle, CropElement, /** @lends Handle.prototype **/ {
 
   /**
-   * @param {string} handle key identifying what handle it is.
-   * @param {DomNode} parent dom node the handle is attached to.
+   * Initialize the dom nodes for the handle
+   * @param {DomNode} parent parent element to append to (cropper).
    */
-  constructor ({
-    handle: handle,
-    parent: parent,
-    tinycrop: tinycrop
-  }) {
-    super(document.createElement('div'))
-    this.tinycrop = tinycrop
-    this.north = handle.toLowerCase().indexOf('north') > -1,
-    this.south = handle.toLowerCase().indexOf('south') > -1,
-    this.east = handle.toLowerCase().indexOf('east') > -1,
-    this.west = handle.toLowerCase().indexOf('west') > -1
-    this.element.dataset[handle] = true
+  initialize (parent) {
+    CropElement.prototype.initialize.call(this, d.createElement('div'))
+    this.element.dataset[this.handle] = true
     this.element.classList.add('handle')
     parent.appendChild(this.element)
-  }
+  },
 
-  startResize (cropperRect) {
-    this.events.mouseDown = Util.attach(this.element, 'mousedown', (e) => {
-      this.tinycrop.startResize({
+  /**
+   * Signifies we need to be able to size - mousedown on handle starts the process.
+   * The anchor is based upon which handle the user has selected.
+   * @param {ClientRect} rect rectangle representing the cropper
+   */
+  startSize (rect) {
+    this._events.mousedown = attach(this.element, mousedown, e => {
+      this.tinycrop.startSize({
         x:
-          this.west ? cropperRect.left + cropperRect.width :
-          this.east ? cropperRect.left :
+          this.west ? rect.left + rect.width :
+          this.east ? rect.left :
           null,
         y:
-          this.north ? cropperRect.top + cropperRect.height :
-          this.south ? cropperRect.top :
+          this.north ? rect.top + rect.height :
+          this.south ? rect.top :
           null
       }, e)
     })
   }
 
-}
+})

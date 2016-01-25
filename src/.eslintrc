@@ -1,7 +1,6 @@
 {
   "env": {
-    "browser": true,
-    "node": false
+    "amd": true
   },
   "extends": "../.eslintrc"
 }

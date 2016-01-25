@@ -1,45 +1,27 @@
 {
-	"version": "0.2.0",
-	"configurations": [
-		{
-			"name": "Launch",
-			"type": "node",
-			"request": "launch",
-			"program": "app.js",
-			"stopOnEntry": false,
-			"args": [],
-			"cwd": ".",
-			"runtimeExecutable": null,
-			"runtimeArgs": [
-				"--nolazy"
-			],
-			"env": {
-				"NODE_ENV": "development"
-			},
-			"externalConsole": false,
-			"sourceMaps": false,
-			"outDir": null
-		},
-		{
-			"name": "Run mocha",
-			"type": "node",
-			"program": "node_modules/mocha/bin/_mocha",
-			"stopOnEntry": false,
-			"args": ["--compilers", "js:babel-register"],
-			"cwd": ".",
-			"runtimeArgs": [
-					"--nolazy"
-			],
-			"externalConsole": false,
-			"sourceMaps": true,
-			"runtimeExecutable": null,
-			"outDir": null
-		},
-		{
-			"name": "Attach",
-			"type": "node",
-			"request": "attach",
-			"port": 5858
-		}
-	]
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Run mocha",
+      "request": "launch",
+      "type": "node",
+      "program": "${workspaceRoot}/node_modules/mocha/bin/_mocha",
+      "stopOnEntry": false,
+      "args": [],
+      "cwd": "${workspaceRoot}",
+      "runtimeArgs": [
+          "--nolazy"
+      ],
+      "externalConsole": false,
+      "sourceMaps": true,
+      "runtimeExecutable": null,
+      "outDir": null
+    },
+    {
+      "name": "Attach",
+      "type": "node",
+      "request": "attach",
+      "port": 5858
+    }
+  ]
 }

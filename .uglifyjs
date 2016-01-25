@@ -1,0 +1,28 @@
+{
+  "props": [
+    "TinyCrop",
+    "prototype",
+    "image",
+    "minWidth",
+    "maxWidth",
+    "minHeight",
+    "maxHeight",
+    "abs",
+    "innerHTML",
+    "x",
+    "y",
+    "top",
+    "bottom",
+    "left",
+    "right",
+    "height",
+    "width",
+    "on",
+    "off",
+    "destroy",
+    "done",
+    "enumerable",
+    "configurable",
+    "value"
+  ]
+}

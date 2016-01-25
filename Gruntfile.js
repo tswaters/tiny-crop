@@ -1,12 +1,13 @@
+'use strict'
 
 module.exports = (grunt) => {
 
   grunt.initConfig({
 
-    'pkg': grunt.file.readJSON('package.json'),
+    pkg: grunt.file.readJSON('package.json'),
 
-    'name': '<%= pkg.name.toLowerCase() %>',
-    'banner': [
+    name: '<%= pkg.name.toLowerCase() %>',
+    banner: [
       '/*',
       '<%= pkg.name %> - <%= pkg.description %> v<%= pkg.version%>',
       'built <%= grunt.template.today(\'UTC:yyyy-mm-dd"T"HH:MM:ss.l"Z"\') %>',
@@ -24,30 +25,22 @@ module.exports = (grunt) => {
       analysis: ['test/reports/analysis']
     },
 
-    browserify: {
-      options: {
-      },
+    'string-replace': {
       dist: {
         files: {
-          './dist/tiny-crop.js': ['src/index.js']
+          'dist/tiny-crop.js': 'src/main.js'
         },
         options: {
-          browserifyOptions: {
-            debug: true
-          },
-          transform: [
-            ['babelify', {
-              presets: ['es2015']
-            }]
+          replacements: [
+            {
+              pattern: /\/\* \@include (.+?) \*\//gi,
+              replacement (match, file) {
+                return grunt.file.read(`src/${file}`)
+                  //.replace(/(^|\n)/gi, '$1  ')
+                  //.replace(/\s{1,}\n/gi, '\n')
+              }
+            }
           ]
-        }
-      }
-    },
-
-    extract_sourcemap: {
-      dist: {
-        files: {
-          'dist/': 'dist/tiny-crop.js'
         }
       }
     },
@@ -56,22 +49,23 @@ module.exports = (grunt) => {
       options: {
         banner: '<%= banner %>\n',
         compress: {
-          unsafe: true
+          unsafe: true,
+          evaluate: false
         },
-        sourceMap: true,
-        sourceMapIn: 'dist/tiny-crop.js.map'
+        mangle: {
+        },
+        exceptionsFiles: [
+          '.uglifyjs'
+        ],
+        mangleProperties: {},
+        sourceMap: true
       },
       dist: {
         options: {
           screwIE8: true
         },
         files: {
-          'dist/tiny-crop.min.js': ['./dist/tiny-crop.js']
-        }
-      },
-      compat: {
-        files: {
-          'dist/tiny-crop.compat.min.js': ['./dist/tiny-crop.compat.js']
+          'dist/tiny-crop.min.js': ['dist/tiny-crop.js']
         }
       }
     },
@@ -112,10 +106,15 @@ module.exports = (grunt) => {
       }
     },
 
-    gitcheckout: {
-      'gh-pages': {
+    mocha_istanbul: {
+      coverage: {
+        src: 'test/unit',
         options: {
-          branch: 'gh-pages'
+          coverageFolder: 'test/reports/coverage',
+          istanbulOptions: [
+            '--hook-run-in-context'
+          ],
+          mask: '*.test.js'
         }
       }
     },
@@ -123,25 +122,23 @@ module.exports = (grunt) => {
     watch: {
       scripts: {
         files: ['Gruntfile.js', 'src/**/*.js'],
-        tasks: ['browserify', 'extract_sourcemap', 'uglify:dist']
+        tasks: ['default']
       }
     }
   })
 
+  grunt.loadNpmTasks('grunt-mocha-istanbul')
   grunt.loadNpmTasks('grunt-jsdoc')
   grunt.loadNpmTasks('grunt-eslint')
-  grunt.loadNpmTasks('grunt-shell')
   grunt.loadNpmTasks('grunt-contrib-clean')
-  grunt.loadNpmTasks('grunt-browserify')
-  grunt.loadNpmTasks('grunt-extract-sourcemap')
+  grunt.loadNpmTasks('grunt-contrib-concat')
   grunt.loadNpmTasks('grunt-contrib-uglify')
   grunt.loadNpmTasks('grunt-contrib-watch')
-  grunt.loadNpmTasks('grunt-babel')
+  grunt.loadNpmTasks('grunt-string-replace')
 
   grunt.registerTask('default', [
     'clean:dist',
-    'browserify',
-    'extract_sourcemap',
+    'string-replace:dist',
     'uglify:dist'
   ])
 
@@ -152,8 +149,7 @@ module.exports = (grunt) => {
 
   grunt.registerTask('test', [
     'clean:coverage',
-    'shell:test',
-    'shell:coverage'
+    'mocha_istanbul'
   ])
 
   grunt.registerTask('docs', [

@@ -4,11 +4,67 @@
   <script src="../dist/tiny-crop.min.js"></script>
 </head>
 <body>
-  <img id="image" src="example.jpg">
+  <p><img id="image" src="example.jpg"></p>
+  <p>
+    <label for="aspectWidth">Aspect Width</label> <input id="aspectWidth">
+    <label for="aspectHeight">Aspect Height</label> <input id="aspectHeight">
+  </p>
+  <p><label for="minWidth">Min Width</label> <input id="minWidth"></p>
+  <p><label for="minHeight">Min Height</label> <input id="minHeight"></p>
+  <p><label for="maxWidth">Max Width</label> <input id="maxWidth"></p>
+  <p><label for="maxHeight">Max Height</label> <input id="maxHeight"></p>
+
+  <button type="button" id="attach">Attach</button>
+  <button type="button" id="destroy">Destroy</button>
   <script>
-    window.addEventListener('load', function () {
-      var cropper = new TinyCrop({image: document.getElementById('image')});
+    var cropper;
+    window.addEventListener('load', () => {
+
+      document.getElementById('attach').addEventListener('click', e => {
+        if (cropper) return;
+
+        cropper = new TinyCrop({
+          image: document.getElementById('image'),
+          aspect: {
+            width: document.getElementById('aspectWidth').value,
+            height: document.getElementById('aspectHeight').value
+          },
+          minWidth: document.getElementById('minWidth').value || null,
+          maxWidth: document.getElementById('maxWidth').value || null,
+          minHeight: document.getElementById('minHeight').value || null,
+          maxHeight: document.getElementById('maxHeight').value || null
+        });
+
+        cropper.on('done', rect =>
+          document.getElementById('output').innerHTML = [
+            '<pre>',
+            'width: ' + rect.width,
+            'height: ' + rect.height,
+            'top: ' + rect.top,
+            'right: ' + rect.right,
+            'bottom: ' + rect.bottom,
+            'left: ' + rect.left,
+            'x: ' + rect.x,
+            'y: ' + rect.y,
+            '</pre>'
+          ].join('\n')
+        )
+      })
+
+      document.getElementById('destroy').addEventListener('click', e => {
+        if (!cropper) return
+
+        cropper.destroy()
+        cropper = null;
+
+      })
+
+      document.getElementById('attach').click()
+
     })
   </script>
+  <div id="output">
+
+  </div>
 </body>
 </html>

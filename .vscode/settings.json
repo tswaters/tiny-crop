@@ -16,7 +16,9 @@
     "dist": true,
     "lib": true,
     "docs": true,
-    "typings": true
+    "typings": true,
+    "test/reports": true
   },
+  "javascript.validate.lint.undeclaredVariables": "ignore",
   "eslint.enable": true
 }

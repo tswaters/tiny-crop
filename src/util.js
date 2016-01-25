@@ -1,22 +1,10 @@
+/*eslint no-unused-vars: 0*/
 /**
- * @module src/util
+ * @file util
  * @description utilities
  */
 
 'use strict'
-
-/**
- * Adds css to the page.
- * @param {string} id id of the style element to search for
- * @param {string} css css to use as the inner text node.
- */
-export function attachPageCss (id, css) {
-  let styleElement = document.getElementById(id)
-  if (!styleElement) { styleElement = document.createElement('style') }
-  styleElement.type = 'text/css'
-  styleElement.innerHTML = css
-  document.head.appendChild(styleElement)
-}
 
 /**
  * Attaches event listener, returns function that removes.
@@ -25,17 +13,18 @@ export function attachPageCss (id, css) {
  * @param {function()} fn function to attach.
  * @returns {function()} a function that, when called, removes event listener
  * @example
- * var element = document.getElementById('some-element')
- * var disposable = Events.attach(element, 'click', () => { console.log('clicked'); })
+ * let element = document.getElementById('some-element')
+ * let disposable = Events.attach(element, 'click', () => { console.log('clicked'); })
  * disposable() // removes event handler
+ * @access private
  */
-export function attach (element, eventName, fn) {
+function attach (element, eventName, fn) {
   const handle = function (e) {
     e.stopPropagation()
     fn.call(this, e)
   }
   element.addEventListener(eventName, handle)
-  return function () {
+  return () => {
     element.removeEventListener(eventName, handle)
   }
 }
@@ -45,61 +34,33 @@ export function attach (element, eventName, fn) {
  * (either passed directly, or through getElementById)
  * @param {string|object} thing
  * @returns {HTMLImageElement} image element
+ * @access private
  */
-export function getImage (thing) {
-  let ret
-  if (isString(thing) && isNull(ret = document.getElementById(thing))) {
-    throw new Error('Could not find element #' + thing)
+function getImage (thing) {
+  const image = typeof thing === 'string' ?
+    d.getElementById(thing) :
+    thing
+  if (image instanceof HTMLImageElement) {
+    return image
   }
-  else if (thing instanceof HTMLImageElement) {
-    ret = thing
-  }
-  if (!(ret && ret instanceof HTMLImageElement)) {
-    throw new Error('Provided argument, ' + thing + 'did not resolve to image')
-  }
-  return ret
-}
-
-/**
- * Retrieves a ClientRect, ensuring height/width are present (IE8 doesn't include these)
- * @param {HTMLElement} element dom element for getting the rect for
- * @returns {ClientRect} rectangle guarenteed to include height/width.
- */
-export function safeGetRect (element) {
-  let rect = element.getBoundingClientRect()
-
-  // IE8 doesn't provide height/width
-  if (!(rect.height || rect.width)) {
-
-    // also doesn't like overriding properties on native objects.
-    rect = {
-      'top': rect.top,
-      'bottom': rect.bottom,
-      'left': rect.left,
-      'right': rect.right,
-      'height': rect.bottom - rect.top,
-      'width': rect.right - rect.left
-    }
-
-  }
-
-  return rect
+  throw new Error(parameterError)
 }
 
 /**
  * Verifies a passed parameter is a valid number to work with.
- * @memberOf Crop
+ * @memberOf Crop[]
  * @param {*} value parameter value to check
  * @param {object} [opts={}] options (optional)
  * @param {number} [opts.min=-Infinity] minimum value
  * @param {number} [opts.max=Infinity] maximum value
  * @returns {number|null} the number or null if invalid.
+ * @access private
  */
-export function validateNumber (value, opts) {
-  opts = opts || {}
-  const minValue = isNumber(opts.min) ? opts.min : -Infinity
-  const maxValue = isNumber(opts.max) ? opts.max : Infinity
-  return !isNumber(value) || value < minValue || value > maxValue ?
+function validateNumber (value /*, opts */) {
+  const opts = arguments[1] || {}
+  const minValue = typeof opts.min === 'number' ? opts.min : -Infinity
+  const maxValue = typeof opts.max === 'number' ? opts.max : Infinity
+  return isNaN(value) || typeof value !== 'number' || value < minValue || value > maxValue ?
     null :
     value
 }
@@ -109,8 +70,9 @@ export function validateNumber (value, opts) {
  * @param {Array|Object} array iteratable entity
  * @param {function()} iterator function applied to each item
  * @returns {Array|Object} returns array passed in.
+ * @access private
  */
-export function forEach (array, iterator) {
+function forEach (array, iterator) {
   const isArray = typeof array.length !== 'undefined'
   const enumerable = isArray ? array : Object.keys(array)
   const length = enumerable.length
@@ -125,50 +87,17 @@ export function forEach (array, iterator) {
 }
 
 /**
- * Returns whether or not provided value isundefined
- * @param {*} item thing to check if undefined.
- * @returns {boolean} whether passed item was undefined.
+ * attaches a prototype with additional attributes to a class.
+ * @param {*} ctor constructor
+ * @param {*} superCtor super-class constructor
+ * @param {*} attrs additional attributes to attach
+ * @access private
  */
-export function isUndefined (item) {
-  return typeof item === 'undefined'
-}
-
-/**
- * Returns whether or not provided value is null
- * @param {*} item thing to check if null.
- * @returns {boolean} whether passed item was null.
- */
-export function isNull (item) {
-  return item === null
-}
-
-/**
- * Returns whether or not provided value is a function
- * @param {*} item thing to check if function.
- * @returns {boolean} whether passed item is a function.
- */
-export function isFunction (item) {
-  return typeof item === 'function'
-}
-
-/**
- * Version of _.isNumber.
- * @param {*} item item to check if is number or not
- * @returns {boolean} whether the passed item is a number or not.
- */
-export function isNumber (item) {
-  return typeof item === 'number' ||
-    typeof item === 'object' && Object.prototype.toString.call(item) === '[object Number]' ||
-    false
-}
-
-/**
- * Version of _.isString.
- * @param {*} item item to check if is number or not
- * @returns {boolean} whether the passed item is a string or not.
- */
-export function isString (item) {
-  return typeof item === 'string' ||
-    typeof item === 'object' && Object.prototype.toString.call(item) === '[object String]' ||
-    false
+function inherits (ctor, superCtor, attrs) {
+  const proto = Object.create(superCtor.prototype)
+  forEach(attrs, (value, key) => {
+    proto[key] = value
+  })
+  ctor.prototype = Object.create(proto)
+  ctor.prototype.constructor = superCtor
 }
