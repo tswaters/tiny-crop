@@ -5,10 +5,6 @@
 </head>
 <body>
   <p><img id="image" src="example.jpg"></p>
-  <p>
-    <label for="aspectWidth">Aspect Width</label> <input id="aspectWidth">
-    <label for="aspectHeight">Aspect Height</label> <input id="aspectHeight">
-  </p>
   <p><label for="minWidth">Min Width</label> <input id="minWidth"></p>
   <p><label for="minHeight">Min Height</label> <input id="minHeight"></p>
   <p><label for="maxWidth">Max Width</label> <input id="maxWidth"></p>
@@ -25,10 +21,6 @@
 
         cropper = new TinyCrop({
           image: document.getElementById('image'),
-          aspect: {
-            width: document.getElementById('aspectWidth').value,
-            height: document.getElementById('aspectHeight').value
-          },
           minWidth: document.getElementById('minWidth').value || null,
           maxWidth: document.getElementById('maxWidth').value || null,
           minHeight: document.getElementById('minHeight').value || null,

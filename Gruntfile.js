@@ -82,15 +82,6 @@ module.exports = (grunt) => {
       ]
     },
 
-    shell: {
-      coverage: {
-        command: 'npm run-script coverage'
-      },
-      test: {
-        command: 'npm run-script test'
-      }
-    },
-
     jsdoc: {
       dist: {
         src: [

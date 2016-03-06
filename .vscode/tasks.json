@@ -11,13 +11,5 @@
     "taskName": "test",
     "isTestCommand": true,
     "showOutput": "always"
-    // todo: figure out if I can do this
-    // "problemMatcher": {
-    //   "owner": "mocha",
-    //   "fileLocation": ["relative", "${workspaceRoot}"],
-    //   "pattern": {
-
-    //   }
-    // }
   }]
 }

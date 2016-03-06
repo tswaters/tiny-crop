@@ -3,9 +3,7 @@
   "version": "1.0.0",
   "description": "tiny cropping library",
   "scripts": {
-    "authors": "git log --all --format=\"%aN <%aE>\" > AUTHORS",
-    "test": "mocha",
-    "coverage": "node ./node_modules/istanbul/lib/cli cover --dir test/reports/coverage --hook-run-in-context node_modules/mocha/bin/_mocha"
+    "authors": "git log --all --format=\"%aN <%aE>\" > AUTHORS"
   },
   "keywords": [
     "crop"
