@@ -23,7 +23,9 @@
     "grunt-eslint": "^18.0.0",
     "grunt-jsdoc": "^1.1.0",
     "grunt-mocha-istanbul": "^3.0.1",
+    "grunt-selenium-standalone": "git+https://github.com/tswaters/grunt-selenium-standalone.git#master",
     "grunt-string-replace": "^1.2.1",
+    "grunt-webdriver": "^1.0.0",
     "ink-docstrap": "^1.1.4",
     "istanbul": "^0.4.2",
     "jsdom": "^7.2.2",
@@ -31,7 +33,9 @@
     "mocha": "^2.4.5",
     "mocha-jsdom": "^1.0.0",
     "sinon": "^2.0.0-pre",
-    "unit.js": "^2.0.0"
+    "unit.js": "^2.0.0",
+    "wdio-mocha-framework": "^0.2.11",
+    "webdriverio": "^4.0.3"
   },
   "dependencies": {}
 }

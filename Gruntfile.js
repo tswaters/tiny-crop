@@ -119,6 +119,31 @@ module.exports = (grunt) => {
       }
     },
 
+    selenium_standalone: {
+      dev: {
+        seleniumVersion: '2.50.1',
+        seleniumDownloadURL: 'http://selenium-release.storage.googleapis.com',
+        drivers: {
+          chrome: {
+            version: '2.15',
+            arch: process.arch,
+            baseURL: 'http://chromedriver.storage.googleapis.com'
+          },
+          ie: {
+            version: '2.45',
+            arch: process.arch,
+            baseURL: 'http://selenium-release.storage.googleapis.com'
+          }
+        }
+      }
+    },
+
+    webdriver: {
+      test: {
+        configFile: './wdio.conf.js'
+      }
+    },
+
     watch: {
       scripts: {
         files: ['Gruntfile.js', 'src/**/*.js'],
@@ -127,6 +152,8 @@ module.exports = (grunt) => {
     }
   })
 
+  grunt.loadNpmTasks('grunt-selenium-standalone')
+  grunt.loadNpmTasks('grunt-webdriver')
   grunt.loadNpmTasks('grunt-mocha-istanbul')
   grunt.loadNpmTasks('grunt-jsdoc')
   grunt.loadNpmTasks('grunt-eslint')
@@ -147,9 +174,17 @@ module.exports = (grunt) => {
     'eslint'
   ])
 
+  grunt.registerTask('integration', [
+    'selenium_standalone:dev:install',
+    'selenium_standalone:dev:start',
+    'webdriver:test',
+    'selenium_standalone:dev:stop'
+  ])
+
   grunt.registerTask('test', [
     'clean:coverage',
-    'mocha_istanbul'
+    'mocha_istanbul',
+    'integration'
   ])
 
   grunt.registerTask('docs', [
