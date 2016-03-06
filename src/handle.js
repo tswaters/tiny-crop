@@ -29,7 +29,7 @@ inherits(Handle, CropElement, /** @lends Handle.prototype **/ {
    * @param {DomNode} parent parent element to append to (cropper).
    */
   initialize (parent) {
-    CropElement.prototype.initialize.call(this, d.createElement('div'))
+    CropElement.prototype.initialize.call(this, document.createElement('div'))
     this.element.dataset[this.handle] = true
     this.element.classList.add('handle')
     parent.appendChild(this.element)

@@ -19,9 +19,9 @@ inherits(Cropper, CropElement, /** @lends Cropper.prototype **/  {
    * Initialize the dom nodes for the cropper element.
    */
   initialize () {
-    CropElement.prototype.initialize.call(this, d.createElement('div'))
+    CropElement.prototype.initialize.call(this, document.createElement('div'))
     this.element.classList.add(croparea)
-    d.body.appendChild(this.element)
+    document.body.appendChild(this.element)
   },
 
   /**

@@ -4,8 +4,7 @@
 
 // a couple strings that are used in a few spots
 // uglifier will slash these to single characters
-const w = window
-const d = document
+
 const parameterError = 'invalid parameters provided to tinycrop'
 const south = 'south'
 const east = 'east'

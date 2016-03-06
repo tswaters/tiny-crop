@@ -88,12 +88,12 @@ function TinyCrop (/*opts*/) {
 
   this._docMouseUp = null
 
-  let styleElement = d.getElementById('tiny-crop-css')
+  let styleElement = document.getElementById('tiny-crop-css')
   if (!styleElement) {
-    styleElement = d.createElement('style')
+    styleElement = document.createElement('style')
     styleElement.id = 'tiny-crop-css'
     styleElement.type = 'text/css'
-    d.head.appendChild(styleElement)
+    document.head.appendChild(styleElement)
     styleElement.innerHTML = [
       `.crop-target,.${handle},.${croparea}{user-select:none;box-sizing:border-box}`,
       `.${croparea}{opacity:.5;display:none;background-color:#AAA;border:1px solid;position:absolute}`,
@@ -143,7 +143,7 @@ TinyCrop.prototype = {
    */
   start () {
     this._cropper.start()
-    this._docMouseUp = attach(d, 'mouseup', () => this.finish())
+    this._docMouseUp = attach(document, 'mouseup', () => this.finish())
   },
 
   /**
@@ -163,7 +163,7 @@ TinyCrop.prototype = {
    * Signifies a crop operation has completed
    * @emits done
    */
-  finish (ev) {
+  finish () {
     if (this._docMouseUp) { this._docMouseUp(); this._docMouseUp = null }
     this._cropper.element.classList.add('finished')
     this._handles.forEach(handle => handle.finish())
@@ -214,8 +214,8 @@ TinyCrop.prototype = {
       )
       this._cropDimensions.top = !inverse ? Math[min](anchor.y, this._bounds.max.y - height) : null
       this._cropDimensions.bottom = inverse ? Math[min](
-        w[_innerHeight] - anchor.y,
-        w[_innerHeight] - (this._bounds.min.y + height)
+        window.innerHeight - anchor.y,
+        window.innerHeight - (this._bounds.min.y + height)
       ) : null
       this._cropDimensions.height = height
     }
@@ -228,8 +228,8 @@ TinyCrop.prototype = {
       )
       this._cropDimensions.left = !inverse ? Math[min](anchor.x, this._bounds.max.x - width) : null
       this._cropDimensions.right = inverse ? Math[min](
-        w[_innerWidth] - anchor.x,
-        w[_innerWidth] - (this._bounds.min.x + width)
+        window.innerWidth - anchor.x,
+        window.innerWidth - (this._bounds.min.x + width)
       ) : null
       this._cropDimensions.width = width
     }

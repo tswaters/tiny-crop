@@ -38,7 +38,7 @@ function attach (element, eventName, fn) {
  */
 function getImage (thing) {
   const image = typeof thing === 'string' ?
-    d.getElementById(thing) :
+    document.getElementById(thing) :
     thing
   if (image instanceof HTMLImageElement) {
     return image
